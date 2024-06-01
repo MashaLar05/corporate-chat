@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corporate Chat</title>
+</head>
+<body>
+    <h1>Corporate Chat</h1>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Enter your message">
+    <button id="sendButton">Send</button>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:3003');
+
+        ws.onopen = () => {
+            console.log('Connected to the WebSocket server');
+        };
+
+        ws.onmessage = async (event) => {
+            const messagesDiv = document.getElementById('messages');
+            const message = document.createElement('div');
+
+            // Перевіряємо, чи є дані типу Blob
+            if (event.data instanceof Blob) {
+                const text = await event.data.text();
+                message.textContent = text;
+            } else {
+                message.textContent = event.data;
+            }
+
+            messagesDiv.appendChild(message);
+        };
+
+        ws.onclose = () => {
+            console.log('Disconnected from the WebSocket server');
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error: ', error);
+        };
+
+        document.getElementById('sendButton').addEventListener('click', () => {
+            const input = document.getElementById('messageInput');
+            const message = input.value;
+            console.log('Sending message:', message);
+            ws.send(message);
+            input.value = '';
+        });
+    </script>
+</body>
+</html>
